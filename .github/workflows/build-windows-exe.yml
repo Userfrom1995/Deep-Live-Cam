@@ -58,121 +58,113 @@ jobs:
         
     - name: Create PyInstaller spec file
       run: |
-        $specContent = @"
-# -*- mode: python ; coding: utf-8 -*-
-
-block_cipher = None
-
-a = Analysis(
-    ['run.py'],
-    pathex=[],
-    binaries=[],
-    datas=[
-        ('locales', 'locales'),
-        ('media', 'media'),
-        ('models', 'models'),
-        ('modules', 'modules'),
-    ],
-    hiddenimports=[
-        'cv2',
-        'customtkinter',
-        'insightface',
-        'onnxruntime',
-        'torch',
-        'torchvision',
-        'tensorflow',
-        'numpy',
-        'PIL',
-        'PIL.Image',
-        'PIL.ImageTk',
-        'tkinter',
-        'tkinter.ttk',
-        'tkinter.filedialog',
-        'tkinter.messagebox',
-        'psutil',
-        'opennsfw2',
-        'protobuf',
-        'typing_extensions',
-        'cv2_enumerate_cameras',
-        'onnx',
-    ],
-    hookspath=[],
-    hooksconfig={},
-    runtime_hooks=[],
-    excludes=[
-        'matplotlib',
-        'scipy',
-        'pandas',
-        'jupyter',
-        'notebook',
-    ],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
-    noarchive=False,
-)
-
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
-
-exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    [],
-    name='FaceApp',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
-    console=False,
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-    version='version_info.txt',
-    icon=None,
-)
-"@
-        $specContent | Out-File -FilePath "faceapp.spec" -Encoding UTF8
+        echo "# -*- mode: python ; coding: utf-8 -*-" > faceapp.spec
+        echo "" >> faceapp.spec
+        echo "block_cipher = None" >> faceapp.spec
+        echo "" >> faceapp.spec
+        echo "a = Analysis(" >> faceapp.spec
+        echo "    ['run.py']," >> faceapp.spec
+        echo "    pathex=[]," >> faceapp.spec
+        echo "    binaries=[]," >> faceapp.spec
+        echo "    datas=[" >> faceapp.spec
+        echo "        ('locales', 'locales')," >> faceapp.spec
+        echo "        ('media', 'media')," >> faceapp.spec
+        echo "        ('models', 'models')," >> faceapp.spec
+        echo "        ('modules', 'modules')," >> faceapp.spec
+        echo "    ]," >> faceapp.spec
+        echo "    hiddenimports=[" >> faceapp.spec
+        echo "        'cv2'," >> faceapp.spec
+        echo "        'customtkinter'," >> faceapp.spec
+        echo "        'insightface'," >> faceapp.spec
+        echo "        'onnxruntime'," >> faceapp.spec
+        echo "        'torch'," >> faceapp.spec
+        echo "        'torchvision'," >> faceapp.spec
+        echo "        'tensorflow'," >> faceapp.spec
+        echo "        'numpy'," >> faceapp.spec
+        echo "        'PIL'," >> faceapp.spec
+        echo "        'PIL.Image'," >> faceapp.spec
+        echo "        'PIL.ImageTk'," >> faceapp.spec
+        echo "        'tkinter'," >> faceapp.spec
+        echo "        'tkinter.ttk'," >> faceapp.spec
+        echo "        'tkinter.filedialog'," >> faceapp.spec
+        echo "        'tkinter.messagebox'," >> faceapp.spec
+        echo "        'psutil'," >> faceapp.spec
+        echo "        'opennsfw2'," >> faceapp.spec
+        echo "        'protobuf'," >> faceapp.spec
+        echo "        'typing_extensions'," >> faceapp.spec
+        echo "        'cv2_enumerate_cameras'," >> faceapp.spec
+        echo "        'onnx'," >> faceapp.spec
+        echo "    ]," >> faceapp.spec
+        echo "    hookspath=[]," >> faceapp.spec
+        echo "    hooksconfig={}," >> faceapp.spec
+        echo "    runtime_hooks=[]," >> faceapp.spec
+        echo "    excludes=[" >> faceapp.spec
+        echo "        'matplotlib'," >> faceapp.spec
+        echo "        'scipy'," >> faceapp.spec
+        echo "        'pandas'," >> faceapp.spec
+        echo "        'jupyter'," >> faceapp.spec
+        echo "        'notebook'," >> faceapp.spec
+        echo "    ]," >> faceapp.spec
+        echo "    win_no_prefer_redirects=False," >> faceapp.spec
+        echo "    win_private_assemblies=False," >> faceapp.spec
+        echo "    cipher=block_cipher," >> faceapp.spec
+        echo "    noarchive=False," >> faceapp.spec
+        echo ")" >> faceapp.spec
+        echo "" >> faceapp.spec
+        echo "pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)" >> faceapp.spec
+        echo "" >> faceapp.spec
+        echo "exe = EXE(" >> faceapp.spec
+        echo "    pyz," >> faceapp.spec
+        echo "    a.scripts," >> faceapp.spec
+        echo "    a.binaries," >> faceapp.spec
+        echo "    a.zipfiles," >> faceapp.spec
+        echo "    a.datas," >> faceapp.spec
+        echo "    []," >> faceapp.spec
+        echo "    name='FaceApp'," >> faceapp.spec
+        echo "    debug=False," >> faceapp.spec
+        echo "    bootloader_ignore_signals=False," >> faceapp.spec
+        echo "    strip=False," >> faceapp.spec
+        echo "    upx=True," >> faceapp.spec
+        echo "    upx_exclude=[]," >> faceapp.spec
+        echo "    runtime_tmpdir=None," >> faceapp.spec
+        echo "    console=False," >> faceapp.spec
+        echo "    disable_windowed_traceback=False," >> faceapp.spec
+        echo "    argv_emulation=False," >> faceapp.spec
+        echo "    target_arch=None," >> faceapp.spec
+        echo "    codesign_identity=None," >> faceapp.spec
+        echo "    entitlements_file=None," >> faceapp.spec
+        echo "    icon=None," >> faceapp.spec
+        echo ")" >> faceapp.spec
         
     - name: Create version info
       run: |
-        $versionInfo = @"
-VSVersionInfo(
-  ffi=FixedFileInfo(
-    filevers=(1, 0, 0, 0),
-    prodvers=(1, 0, 0, 0),
-    mask=0x3f,
-    flags=0x0,
-    OS=0x40004,
-    fileType=0x1,
-    subtype=0x0,
-    date=(0, 0)
-  ),
-  kids=[
-    StringFileInfo(
-      [
-        StringTable(
-          u'040904B0',
-          [StringStruct(u'CompanyName', u'FaceApp'),
-           StringStruct(u'FileDescription', u'Face Processing Application'),
-           StringStruct(u'FileVersion', u'1.0.0.0'),
-           StringStruct(u'InternalName', u'FaceApp'),
-           StringStruct(u'LegalCopyright', u'Copyright (c) 2025'),
-           StringStruct(u'OriginalFilename', u'FaceApp.exe'),
-           StringStruct(u'ProductName', u'FaceApp'),
-           StringStruct(u'ProductVersion', u'1.0.0.0')])
-      ]), 
-    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
-  ]
-)
-"@
-        $versionInfo | Out-File -FilePath "version_info.txt" -Encoding UTF8
+        echo "VSVersionInfo(" > version_info.txt
+        echo "  ffi=FixedFileInfo(" >> version_info.txt
+        echo "    filevers=(1, 0, 0, 0)," >> version_info.txt
+        echo "    prodvers=(1, 0, 0, 0)," >> version_info.txt
+        echo "    mask=0x3f," >> version_info.txt
+        echo "    flags=0x0," >> version_info.txt
+        echo "    OS=0x40004," >> version_info.txt
+        echo "    fileType=0x1," >> version_info.txt
+        echo "    subtype=0x0," >> version_info.txt
+        echo "    date=(0, 0)" >> version_info.txt
+        echo "  )," >> version_info.txt
+        echo "  kids=[" >> version_info.txt
+        echo "    StringFileInfo([" >> version_info.txt
+        echo "      StringTable(" >> version_info.txt
+        echo "        u'040904B0'," >> version_info.txt
+        echo "        [StringStruct(u'CompanyName', u'FaceApp')," >> version_info.txt
+        echo "         StringStruct(u'FileDescription', u'Face Processing Application')," >> version_info.txt
+        echo "         StringStruct(u'FileVersion', u'1.0.0.0')," >> version_info.txt
+        echo "         StringStruct(u'InternalName', u'FaceApp')," >> version_info.txt
+        echo "         StringStruct(u'LegalCopyright', u'Copyright (c) 2025')," >> version_info.txt
+        echo "         StringStruct(u'OriginalFilename', u'FaceApp.exe')," >> version_info.txt
+        echo "         StringStruct(u'ProductName', u'FaceApp')," >> version_info.txt
+        echo "         StringStruct(u'ProductVersion', u'1.0.0.0')])" >> version_info.txt
+        echo "    ])," >> version_info.txt
+        echo "    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])" >> version_info.txt
+        echo "  ]" >> version_info.txt
+        echo ")" >> version_info.txt
         
     - name: Build EXE with PyInstaller
       run: |
@@ -182,68 +174,60 @@ VSVersionInfo(
       run: |
         if (Test-Path "dist\FaceApp.exe") {
           $fileSize = (Get-Item "dist\FaceApp.exe").Length / 1MB
-          Write-Host "✅ EXE created successfully!"
-          Write-Host "📁 File size: $([math]::Round($fileSize, 1)) MB"
-          Write-Host "📍 Location: dist\FaceApp.exe"
+          Write-Host " EXE created successfully!"
+          Write-Host " File size: $([math]::Round($fileSize, 1)) MB"
+          Write-Host " Location: dist\FaceApp.exe"
         } else {
-          Write-Host "❌ EXE not found!"
+          Write-Host " EXE not found!"
           exit 1
         }
         
     - name: Create distribution package
       run: |
-        # Create a README for the distribution
-        $readmeContent = @"
-# FaceApp - Windows Distribution
-
-## System Requirements
-- Windows 10/11 (64-bit)
-- At least 4GB RAM
-- GPU with CUDA support (recommended for better performance)
-
-## How to Run
-1. Double-click FaceApp.exe
-2. The application will start automatically
-
-## Features
-- Face processing and analysis
-- Real-time video processing
-- Multiple language support
-- GPU acceleration (if available)
-
-## Troubleshooting
-- If the app doesn't start, try running from command prompt to see error messages
-- Make sure Windows Defender/Antivirus isn't blocking the executable
-- For GPU acceleration, ensure CUDA drivers are installed
-- If you encounter missing DLL errors, install Visual C++ Redistributable
-
-## File Information
-- This is a complete standalone application
-- No Python installation required
-- All dependencies are included
-- Built with PyInstaller
-
-## Support
-For issues and support, please visit the project repository.
-"@
-        $readmeContent | Out-File -FilePath "dist\README.txt" -Encoding UTF8
+        echo "# FaceApp - Windows Distribution" > dist\README.txt
+        echo "" >> dist\README.txt
+        echo "## System Requirements" >> dist\README.txt
+        echo "- Windows 10/11 (64-bit)" >> dist\README.txt
+        echo "- At least 4GB RAM" >> dist\README.txt
+        echo "- GPU with CUDA support (recommended for better performance)" >> dist\README.txt
+        echo "" >> dist\README.txt
+        echo "## How to Run" >> dist\README.txt
+        echo "1. Double-click FaceApp.exe" >> dist\README.txt
+        echo "2. The application will start automatically" >> dist\README.txt
+        echo "" >> dist\README.txt
+        echo "## Features" >> dist\README.txt
+        echo "- Face processing and analysis" >> dist\README.txt
+        echo "- Real-time video processing" >> dist\README.txt
+        echo "- Multiple language support" >> dist\README.txt
+        echo "- GPU acceleration (if available)" >> dist\README.txt
+        echo "" >> dist\README.txt
+        echo "## Troubleshooting" >> dist\README.txt
+        echo "- If the app doesn't start, try running from command prompt to see error messages" >> dist\README.txt
+        echo "- Make sure Windows Defender/Antivirus isn't blocking the executable" >> dist\README.txt
+        echo "- For GPU acceleration, ensure CUDA drivers are installed" >> dist\README.txt
+        echo "- If you encounter missing DLL errors, install Visual C++ Redistributable" >> dist\README.txt
+        echo "" >> dist\README.txt
+        echo "## File Information" >> dist\README.txt
+        echo "- This is a complete standalone application" >> dist\README.txt
+        echo "- No Python installation required" >> dist\README.txt
+        echo "- All dependencies are included" >> dist\README.txt
+        echo "- Built with PyInstaller" >> dist\README.txt
+        echo "" >> dist\README.txt
+        echo "## Support" >> dist\README.txt
+        echo "For issues and support, please visit the project repository." >> dist\README.txt
         
-        # Create a simple launcher batch file
-        $launcherContent = @"
-@echo off
-title FaceApp Launcher
-echo Starting FaceApp...
-echo.
-FaceApp.exe
-if errorlevel 1 (
-    echo.
-    echo An error occurred while running FaceApp.
-    echo Please check the console output above for details.
-    echo.
-    pause
-)
-"@
-        $launcherContent | Out-File -FilePath "dist\Launch_FaceApp.bat" -Encoding UTF8
+        echo "@echo off" > dist\Launch_FaceApp.bat
+        echo "title FaceApp Launcher" >> dist\Launch_FaceApp.bat
+        echo "echo Starting FaceApp..." >> dist\Launch_FaceApp.bat
+        echo "echo." >> dist\Launch_FaceApp.bat
+        echo "FaceApp.exe" >> dist\Launch_FaceApp.bat
+        echo "if errorlevel 1 (" >> dist\Launch_FaceApp.bat
+        echo "    echo." >> dist\Launch_FaceApp.bat
+        echo "    echo An error occurred while running FaceApp." >> dist\Launch_FaceApp.bat
+        echo "    echo Please check the console output above for details." >> dist\Launch_FaceApp.bat
+        echo "    echo." >> dist\Launch_FaceApp.bat
+        echo "    pause" >> dist\Launch_FaceApp.bat
+        echo ")" >> dist\Launch_FaceApp.bat
         
     - name: Upload EXE artifact
       uses: actions/upload-artifact@v4
