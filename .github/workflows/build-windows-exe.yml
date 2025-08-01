@@ -29,18 +29,15 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
           
-    - name: Install system dependencies
-      run: |
-        # Install Visual C++ Build Tools components needed for compilation
-        choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --includeOptional --passive"
-        
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
         pip install pyinstaller
-        pip install -r requirements.txt
+        # Install dependencies with pre-compiled wheels to avoid compilation
+        pip install --only-binary=all --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
       env:
-        # Use CPU-only PyTorch for smaller build
+        # Force use of pre-compiled wheels to avoid compilation
+        PIP_ONLY_BINARY: ":all:"
         PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
         
     - name: Verify installation
