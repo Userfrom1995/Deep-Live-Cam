@@ -1,0 +1,288 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install system dependencies
+      run: |
+        # Install Visual C++ Build Tools components needed for compilation
+        choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --includeOptional --passive"
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        pip install pyinstaller
+        pip install -r requirements.txt
+      env:
+        # Use CPU-only PyTorch for smaller build
+        PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
+        
+    - name: Verify installation
+      run: |
+        python --version
+        pip list
+        python -c "import cv2; print('OpenCV:', cv2.__version__)"
+        python -c "import customtkinter; print('CustomTkinter imported successfully')"
+        
+    - name: Clean previous builds
+      run: |
+        if (Test-Path build) { Remove-Item -Recurse -Force build }
+        if (Test-Path dist) { Remove-Item -Recurse -Force dist }
+        if (Test-Path "*.spec") { Remove-Item -Force "*.spec" }
+        
+    - name: Create PyInstaller spec file
+      run: |
+        $specContent = @"
+# -*- mode: python ; coding: utf-8 -*-
+
+block_cipher = None
+
+a = Analysis(
+    ['run.py'],
+    pathex=[],
+    binaries=[],
+    datas=[
+        ('locales', 'locales'),
+        ('media', 'media'),
+        ('models', 'models'),
+        ('modules', 'modules'),
+    ],
+    hiddenimports=[
+        'cv2',
+        'customtkinter',
+        'insightface',
+        'onnxruntime',
+        'torch',
+        'torchvision',
+        'tensorflow',
+        'numpy',
+        'PIL',
+        'PIL.Image',
+        'PIL.ImageTk',
+        'tkinter',
+        'tkinter.ttk',
+        'tkinter.filedialog',
+        'tkinter.messagebox',
+        'psutil',
+        'opennsfw2',
+        'protobuf',
+        'typing_extensions',
+        'cv2_enumerate_cameras',
+        'onnx',
+    ],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[
+        'matplotlib',
+        'scipy',
+        'pandas',
+        'jupyter',
+        'notebook',
+    ],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
+    noarchive=False,
+)
+
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    [],
+    name='FaceApp',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+    version='version_info.txt',
+    icon=None,
+)
+"@
+        $specContent | Out-File -FilePath "faceapp.spec" -Encoding UTF8
+        
+    - name: Create version info
+      run: |
+        $versionInfo = @"
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 0, 0, 0),
+    prodvers=(1, 0, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+        StringTable(
+          u'040904B0',
+          [StringStruct(u'CompanyName', u'FaceApp'),
+           StringStruct(u'FileDescription', u'Face Processing Application'),
+           StringStruct(u'FileVersion', u'1.0.0.0'),
+           StringStruct(u'InternalName', u'FaceApp'),
+           StringStruct(u'LegalCopyright', u'Copyright (c) 2025'),
+           StringStruct(u'OriginalFilename', u'FaceApp.exe'),
+           StringStruct(u'ProductName', u'FaceApp'),
+           StringStruct(u'ProductVersion', u'1.0.0.0')])
+      ]), 
+    VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)
+"@
+        $versionInfo | Out-File -FilePath "version_info.txt" -Encoding UTF8
+        
+    - name: Build EXE with PyInstaller
+      run: |
+        pyinstaller faceapp.spec --clean --noconfirm
+        
+    - name: Verify build
+      run: |
+        if (Test-Path "dist\FaceApp.exe") {
+          $fileSize = (Get-Item "dist\FaceApp.exe").Length / 1MB
+          Write-Host "✅ EXE created successfully!"
+          Write-Host "📁 File size: $([math]::Round($fileSize, 1)) MB"
+          Write-Host "📍 Location: dist\FaceApp.exe"
+        } else {
+          Write-Host "❌ EXE not found!"
+          exit 1
+        }
+        
+    - name: Create distribution package
+      run: |
+        # Create a README for the distribution
+        $readmeContent = @"
+# FaceApp - Windows Distribution
+
+## System Requirements
+- Windows 10/11 (64-bit)
+- At least 4GB RAM
+- GPU with CUDA support (recommended for better performance)
+
+## How to Run
+1. Double-click FaceApp.exe
+2. The application will start automatically
+
+## Features
+- Face processing and analysis
+- Real-time video processing
+- Multiple language support
+- GPU acceleration (if available)
+
+## Troubleshooting
+- If the app doesn't start, try running from command prompt to see error messages
+- Make sure Windows Defender/Antivirus isn't blocking the executable
+- For GPU acceleration, ensure CUDA drivers are installed
+- If you encounter missing DLL errors, install Visual C++ Redistributable
+
+## File Information
+- This is a complete standalone application
+- No Python installation required
+- All dependencies are included
+- Built with PyInstaller
+
+## Support
+For issues and support, please visit the project repository.
+"@
+        $readmeContent | Out-File -FilePath "dist\README.txt" -Encoding UTF8
+        
+        # Create a simple launcher batch file
+        $launcherContent = @"
+@echo off
+title FaceApp Launcher
+echo Starting FaceApp...
+echo.
+FaceApp.exe
+if errorlevel 1 (
+    echo.
+    echo An error occurred while running FaceApp.
+    echo Please check the console output above for details.
+    echo.
+    pause
+)
+"@
+        $launcherContent | Out-File -FilePath "dist\Launch_FaceApp.bat" -Encoding UTF8
+        
+    - name: Upload EXE artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FaceApp-Windows-x64
+        path: |
+          dist/FaceApp.exe
+          dist/README.txt
+          dist/Launch_FaceApp.bat
+        retention-days: 30
+        
+    - name: Create Release (on tag)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          dist/FaceApp.exe
+          dist/README.txt
+          dist/Launch_FaceApp.bat
+        name: Release ${{ github.ref_name }}
+        body: |
+          ## FaceApp Windows Release ${{ github.ref_name }}
+          
+          ### What's Included
+          - `FaceApp.exe` - Main application (standalone)
+          - `README.txt` - Installation and usage instructions
+          - `Launch_FaceApp.bat` - Alternative launcher with error handling
+          
+          ### System Requirements
+          - Windows 10/11 (64-bit)
+          - 4GB+ RAM
+          - GPU with CUDA support (recommended)
+          
+          ### Installation
+          1. Download `FaceApp.exe`
+          2. Run the executable - no installation required!
+          
+          Built automatically with GitHub Actions.
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
