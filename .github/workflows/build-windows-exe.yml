@@ -131,35 +131,12 @@ jobs:
         echo "        'jupyter'," >> faceapp.spec
         echo "        'notebook'," >> faceapp.spec
         echo "        'IPython'," >> faceapp.spec
-        echo "        'zmq'," >> faceapp.spec
-        echo "        'tornado'," >> faceapp.spec
-        echo "        'jinja2'," >> faceapp.spec
-        echo "        'sphinx'," >> faceapp.spec
         echo "        'pytest'," >> faceapp.spec
-        echo "        'setuptools'," >> faceapp.spec
-        echo "        'distutils'," >> faceapp.spec
-        echo "        'email'," >> faceapp.spec
-        echo "        'html'," >> faceapp.spec
-        echo "        'http'," >> faceapp.spec
-        echo "        'urllib3'," >> faceapp.spec
-        echo "        'requests'," >> faceapp.spec
-        echo "        'certifi'," >> faceapp.spec
-        echo "        'charset_normalizer'," >> faceapp.spec
-        echo "        'idna'," >> faceapp.spec
-        echo "        'multiprocessing'," >> faceapp.spec
-        echo "        'concurrent'," >> faceapp.spec
-        echo "        'asyncio'," >> faceapp.spec
         echo "        'unittest'," >> faceapp.spec
         echo "        'test'," >> faceapp.spec
         echo "        'tests'," >> faceapp.spec
-        echo "        'doctest'," >> faceapp.spec
-        echo "        'pdb'," >> faceapp.spec
-        echo "        'profile'," >> faceapp.spec
-        echo "        'pstats'," >> faceapp.spec
-        echo "        'trace'," >> faceapp.spec
         echo "        'turtle'," >> faceapp.spec
         echo "        'tkinter.test'," >> faceapp.spec
-        echo "        'lib2to3'," >> faceapp.spec
         echo "    ]," >> faceapp.spec
         echo "    win_no_prefer_redirects=False," >> faceapp.spec
         echo "    win_private_assemblies=False," >> faceapp.spec
@@ -224,7 +201,15 @@ jobs:
         
     - name: Build EXE with PyInstaller
       run: |
+        # Try building with the spec file first
         pyinstaller faceapp.spec --clean --noconfirm
+      continue-on-error: true
+      
+    - name: Fallback build (if spec fails)
+      if: failure()
+      run: |
+        Write-Host "Spec file build failed, trying simpler approach..."
+        pyinstaller --onefile --windowed --name "FaceApp" --add-data "locales;locales" --add-data "media;media" --add-data "models;models" --add-data "modules;modules" --hidden-import=cv2 --hidden-import=customtkinter --hidden-import=insightface --hidden-import=onnxruntime --hidden-import=torch --hidden-import=torchvision --hidden-import=numpy --hidden-import=PIL --hidden-import=tkinter --hidden-import=psutil --hidden-import=opennsfw2 --hidden-import=protobuf --hidden-import=scipy --hidden-import=albumentations --hidden-import=skimage run.py
         
     - name: Additional compression with UPX
       run: |
