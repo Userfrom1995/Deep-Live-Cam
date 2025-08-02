@@ -29,6 +29,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
           
+    - name: Install compression tools
+      run: |
+        # Install UPX for better compression
+        choco install upx --no-progress
+        
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
@@ -37,14 +42,14 @@ jobs:
         # Install dependencies that have pre-compiled wheels first
         pip install --extra-index-url https://download.pytorch.org/whl/cpu numpy typing-extensions opencv-python cv2_enumerate_cameras onnx psutil customtkinter pillow opennsfw2 protobuf
         
-        # Install PyTorch CPU version
+        # Install PyTorch CPU version (lightweight)
         pip install --extra-index-url https://download.pytorch.org/whl/cpu torch torchvision --index-url https://download.pytorch.org/whl/cpu
         
-        # Install ONNX Runtime GPU (includes CPU fallback)
-        pip install onnxruntime-gpu
+        # Install ONNX Runtime CPU only (much smaller than GPU version)
+        pip install onnxruntime
         
-        # Install TensorFlow
-        pip install tensorflow
+        # Skip TensorFlow for now to reduce size - can be added back if needed
+        # pip install tensorflow
         
         # Install tkinter support
         pip install tk
@@ -91,7 +96,7 @@ jobs:
         echo "        'onnxruntime'," >> faceapp.spec
         echo "        'torch'," >> faceapp.spec
         echo "        'torchvision'," >> faceapp.spec
-        echo "        'tensorflow'," >> faceapp.spec
+        # Remove tensorflow from hidden imports since we're not installing it
         echo "        'numpy'," >> faceapp.spec
         echo "        'PIL'," >> faceapp.spec
         echo "        'PIL.Image'," >> faceapp.spec
@@ -125,6 +130,36 @@ jobs:
         echo "        'pandas'," >> faceapp.spec
         echo "        'jupyter'," >> faceapp.spec
         echo "        'notebook'," >> faceapp.spec
+        echo "        'IPython'," >> faceapp.spec
+        echo "        'zmq'," >> faceapp.spec
+        echo "        'tornado'," >> faceapp.spec
+        echo "        'jinja2'," >> faceapp.spec
+        echo "        'sphinx'," >> faceapp.spec
+        echo "        'pytest'," >> faceapp.spec
+        echo "        'setuptools'," >> faceapp.spec
+        echo "        'distutils'," >> faceapp.spec
+        echo "        'email'," >> faceapp.spec
+        echo "        'html'," >> faceapp.spec
+        echo "        'http'," >> faceapp.spec
+        echo "        'urllib3'," >> faceapp.spec
+        echo "        'requests'," >> faceapp.spec
+        echo "        'certifi'," >> faceapp.spec
+        echo "        'charset_normalizer'," >> faceapp.spec
+        echo "        'idna'," >> faceapp.spec
+        echo "        'multiprocessing'," >> faceapp.spec
+        echo "        'concurrent'," >> faceapp.spec
+        echo "        'asyncio'," >> faceapp.spec
+        echo "        'unittest'," >> faceapp.spec
+        echo "        'test'," >> faceapp.spec
+        echo "        'tests'," >> faceapp.spec
+        echo "        'doctest'," >> faceapp.spec
+        echo "        'pdb'," >> faceapp.spec
+        echo "        'profile'," >> faceapp.spec
+        echo "        'pstats'," >> faceapp.spec
+        echo "        'trace'," >> faceapp.spec
+        echo "        'turtle'," >> faceapp.spec
+        echo "        'tkinter.test'," >> faceapp.spec
+        echo "        'lib2to3'," >> faceapp.spec
         echo "    ]," >> faceapp.spec
         echo "    win_no_prefer_redirects=False," >> faceapp.spec
         echo "    win_private_assemblies=False," >> faceapp.spec
@@ -144,7 +179,7 @@ jobs:
         echo "    name='FaceApp'," >> faceapp.spec
         echo "    debug=False," >> faceapp.spec
         echo "    bootloader_ignore_signals=False," >> faceapp.spec
-        echo "    strip=False," >> faceapp.spec
+        echo "    strip=True," >> faceapp.spec
         echo "    upx=True," >> faceapp.spec
         echo "    upx_exclude=[]," >> faceapp.spec
         echo "    runtime_tmpdir=None," >> faceapp.spec
@@ -191,15 +226,30 @@ jobs:
       run: |
         pyinstaller faceapp.spec --clean --noconfirm
         
+    - name: Additional compression with UPX
+      run: |
+        # Apply additional UPX compression to reduce size further
+        Write-Host "Applying additional UPX compression..."
+        $originalSize = (Get-Item "dist\FaceApp.exe").Length / 1MB
+        Write-Host "Original size: $([math]::Round($originalSize, 1)) MB"
+        
+        # Apply aggressive UPX compression
+        upx --best --lzma "dist\FaceApp.exe"
+        
+        $compressedSize = (Get-Item "dist\FaceApp.exe").Length / 1MB
+        $reduction = (($originalSize - $compressedSize) / $originalSize) * 100
+        Write-Host "Compressed size: $([math]::Round($compressedSize, 1)) MB"
+        Write-Host "Size reduction: $([math]::Round($reduction, 1))%"
+        
     - name: Verify build
       run: |
         if (Test-Path "dist\FaceApp.exe") {
           $fileSize = (Get-Item "dist\FaceApp.exe").Length / 1MB
-          Write-Host " EXE created successfully!"
-          Write-Host " File size: $([math]::Round($fileSize, 1)) MB"
-          Write-Host " Location: dist\FaceApp.exe"
+          Write-Host "✅ EXE created successfully!"
+          Write-Host "📁 Final file size: $([math]::Round($fileSize, 1)) MB"
+          Write-Host "📍 Location: dist\FaceApp.exe"
         } else {
-          Write-Host " EXE not found!"
+          Write-Host "❌ EXE not found!"
           exit 1
         }
         
