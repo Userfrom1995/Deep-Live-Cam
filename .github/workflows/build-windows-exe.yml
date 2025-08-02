@@ -33,12 +33,27 @@ jobs:
       run: |
         python -m pip install --upgrade pip setuptools wheel
         pip install pyinstaller
-        # Install dependencies with pre-compiled wheels to avoid compilation
-        pip install --only-binary=all --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
-      env:
-        # Force use of pre-compiled wheels to avoid compilation
-        PIP_ONLY_BINARY: ":all:"
-        PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
+        
+        # Install dependencies that have pre-compiled wheels first
+        pip install --extra-index-url https://download.pytorch.org/whl/cpu numpy typing-extensions opencv-python cv2_enumerate_cameras onnx psutil customtkinter pillow opennsfw2 protobuf
+        
+        # Install PyTorch CPU version
+        pip install --extra-index-url https://download.pytorch.org/whl/cpu torch torchvision --index-url https://download.pytorch.org/whl/cpu
+        
+        # Install ONNX Runtime GPU (includes CPU fallback)
+        pip install onnxruntime-gpu
+        
+        # Install TensorFlow
+        pip install tensorflow
+        
+        # Install tkinter support
+        pip install tk
+        
+        # Install scipy and scikit-image first (needed by insightface)
+        pip install scipy scikit-image albumentations
+        
+        # Install insightface - try specific version first, then any available version
+        pip install insightface==0.7.3 || pip install insightface
         
     - name: Verify installation
       run: |
@@ -91,13 +106,22 @@ jobs:
         echo "        'typing_extensions'," >> faceapp.spec
         echo "        'cv2_enumerate_cameras'," >> faceapp.spec
         echo "        'onnx'," >> faceapp.spec
+        echo "        'scipy'," >> faceapp.spec
+        echo "        'scipy.spatial'," >> faceapp.spec
+        echo "        'scipy.spatial.distance'," >> faceapp.spec
+        echo "        'albumentations'," >> faceapp.spec
+        echo "        'albumentations.augmentations'," >> faceapp.spec
+        echo "        'albumentations.core'," >> faceapp.spec
+        echo "        'scikit-image'," >> faceapp.spec
+        echo "        'skimage'," >> faceapp.spec
+        echo "        'skimage.transform'," >> faceapp.spec
+        echo "        'skimage.measure'," >> faceapp.spec
         echo "    ]," >> faceapp.spec
         echo "    hookspath=[]," >> faceapp.spec
         echo "    hooksconfig={}," >> faceapp.spec
         echo "    runtime_hooks=[]," >> faceapp.spec
         echo "    excludes=[" >> faceapp.spec
         echo "        'matplotlib'," >> faceapp.spec
-        echo "        'scipy'," >> faceapp.spec
         echo "        'pandas'," >> faceapp.spec
         echo "        'jupyter'," >> faceapp.spec
         echo "        'notebook'," >> faceapp.spec
